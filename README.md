@@ -1,94 +1,116 @@
 # Real-Time Object Detection
 
-A web-based real-time object detection application utilizing YOLO model for rock-paper-scissor detection. The trained weights are present as the `game_weights.pt` file.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](LICENSE)
+[![YOLO11](https://img.shields.io/badge/Ultralytics-YOLO11n-blue.svg?style=flat)](https://docs.ultralytics.com/models/yolo11/)
+[![TensorFlow.js](https://img.shields.io/badge/TensorFlow.js-COCO--SSD-ff6f00.svg?style=flat)](https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd)
 
-A standalone version is a genreal purpose real-time detector written with TensorFlow.js and the Coco-SSD model. Detect objects through your webcam directly in the browser with no server required.
+Two webcam detectors in one repository.
 
+- **`rock-paper-scissors/`** is a custom-trained YOLO11n detector for rock-paper-scissors
+  hand shapes, running locally through OpenCV. The trained weights are committed as
+  `game_weights.pt`.
+- **`standalone-detector/`** is a general-purpose detector that runs entirely in the
+  browser with TensorFlow.js and the COCO-SSD model. No server, no install.
 
-## Demo
+## Rock-paper-scissors detector
 
-As for the rock-paper-scissors detector, install the requirements with:
+Install the dependencies:
+
 ```bash
-pip install -r requirements.txt
+pip install ultralytics opencv-python
 ```
 
-Then run the `live-time-detector.py` normally:
+`ultralytics` pulls in PyTorch. `config.py` selects CUDA automatically when it is
+available and falls back to CPU otherwise.
+
+Run it from inside the project directory, since the script imports `config.py` and
+resolves the weights relative to the working directory:
+
 ```bash
+cd rock-paper-scissors
 python live-time-detector.py
 ```
 
-[Make sure the env paths are set appropriately, which goes without saying.]
+A window opens on the default camera. The most confident detection is printed to stdout
+whenever the predicted label changes. Press `q` or `Esc` to quit.
 
-As for the standalone general purpose detector, just paste the open and run it on a modern browser as usual.
+Detection thresholds live in `config.py`:
 
-## Supported Objects
+| Setting | Default | Meaning |
+|---|---|---|
+| `conf_thres` | `0.5` | Minimum confidence for a box to count |
+| `imgsz` | `640` | Inference resolution |
+| `device` | auto | CUDA device `0` when available, else CPU |
 
-The Coco-SSD model can detect 80 different object classes including:
-- People and body parts
-- Animals (cats, dogs, birds, etc.)
-- Vehicles (cars, bikes, trucks, etc.)
-- Household items (chairs, tables, TVs, etc.)
-- Food items (pizza, banana, wine glass, etc.)
-- And many more!
+## Standalone browser detector
 
-The other one is self-explanatory, I guess.
+Open `standalone-detector/standalone-detector.html` in a modern browser. The page loads
+COCO-SSD from a CDN and asks for camera permission, so it needs a network connection on
+first load but no local setup.
+
+COCO-SSD covers the 80 COCO classes: people, animals, vehicles, household objects, food
+items and so on.
 
 ## Privacy
 
-- All processing happens locally in your browser
-- No data is sent to external servers
-- Camera feed is not recorded or stored
+- All processing happens locally in the browser or on your own machine
+- No frames are sent to a server
+- Nothing is recorded or stored
 
-## Technical Details
+## Technical details
 
-**Rock-Paper-Scissors**
-- **Model**: **YOLO11n** (You Only Look Once v11 - nano variant)
-- **Framework**: **Ultralytics YOLO** (PyTorch backend)
-- **Source**: **Custom-trained weights**
-- Captures frames from webcam using **OpenCV**
+**Rock-paper-scissors**
+- Model: YOLO11n (nano variant)
+- Framework: Ultralytics YOLO, PyTorch backend
+- Weights: custom-trained, committed as `game_weights.pt`
+- Capture: OpenCV `VideoCapture`
 
+**Standalone detector**
+- Model: COCO-SSD (Single Shot MultiBox Detector)
+- Framework: TensorFlow.js
+- Styling: Tailwind CSS
+- Rendering: `requestAnimationFrame` draw loop
 
-**Standalone General Model**
-- **Model**: Coco-SSD (Common Objects in Context - Single Shot MultiBox Detector)
-- **Framework**: TensorFlow.js
-- **Styling**: Tailwind CSS
-- **Performance**: Optimized for real-time detection with requestAnimationFrame
-
-<!-- ## File Structure
+## Repository layout
 
 ```
-├── simple-detector.html          # Main application file
-├── README.md                     # This file
+├── rock-paper-scissors/
+│   ├── live-time-detector.py     # Webcam loop and annotation
+│   ├── config.py                 # Weights path, thresholds, device selection
+│   └── game_weights.pt           # Custom-trained YOLO11n weights
+├── standalone-detector/
+│   └── standalone-detector.html  # Self-contained browser detector
+├── README.md
 └── LICENSE
-``` -->
+```
 
 ## Dataset
 
-**Dataset:** Rock-Paper-Scissors-SXSW  
-**Publisher:** Roboflow (via Universe)  
-**URL:** https://universe.roboflow.com/roboflow-58fyf/rock-paper-scissors-sxsw/dataset/14  
-**Accessed:** [10-08-2025]
-
-
-## Contributing
-
-Feel free to fork this project and submit pull requests for improvements.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+**Dataset:** Rock-Paper-Scissors-SXSW
+**Publisher:** Roboflow (via Universe)
+**URL:** https://universe.roboflow.com/roboflow-58fyf/rock-paper-scissors-sxsw/dataset/14
+**Accessed:** 10-08-2025
 
 ## Troubleshooting
 
-**Camera not working?**
-- Ensure you've granted camera permissions
-- Try using HTTPS (required for camera access on many browsers)
-- Check if another application is using the camera
+**Camera not working**
+- Check that camera permissions are granted
+- Browsers require HTTPS or `localhost` for camera access
+- Confirm no other application is holding the camera
 
-**Poor detection performance?**
-- Ensure good lighting conditions
-- Keep objects at a reasonable distance from the camera
-- Try using a device with better processing power
+**Poor detection quality**
+- Improve lighting
+- Keep the subject at a moderate distance from the camera
+- Lower `conf_thres` in `config.py` to surface weaker detections
 
-**Model loading slowly?**
-- It might take a while to load the model (usually <30 secs), please be patient.
+**Model slow to load**
+- The browser detector downloads COCO-SSD on first load, which can take up to about
+  30 seconds on a slow connection
+
+## Contributing
+
+Fork the project and open a pull request.
+
+## License
+
+MIT License. See [LICENSE](LICENSE) for details.
